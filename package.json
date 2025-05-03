@@ -10,7 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "dagre": "^0.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
     "html-to-image": "^1.11.13",
     "js-yaml": "^4.1.0",
     "react": "^19.0.0",
