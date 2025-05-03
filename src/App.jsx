@@ -40,7 +40,7 @@ export default function App() {
       const newFlows = [], newErrors = [];
       docs.forEach((doc, idx) => {
         try {
-          if (!doc) throw new Error("Boş doküman");
+          if (!doc) throw new Error("Empty document");
           const { nodes, edges } = yamlToTree(doc, `root${idx}`, [
             { id: `root${idx}`, data: { label: "YAML" }, style: { background: "#e0e0e0", borderRadius: 8, padding: 8, minWidth: 80 } },
           ]);
@@ -49,7 +49,7 @@ export default function App() {
           newErrors.push(null);
         } catch (err) {
           newFlows.push({ nodes: [], edges: [] });
-          newErrors.push("YAML hatalı: " + err.message);
+          newErrors.push("YAML error: " + err.message);
           const line = getYamlErrorLine(err.message);
           setYamlErrorLine(line);
           setYamlErrorMsg(err.message);
@@ -60,7 +60,7 @@ export default function App() {
       setErrors(newErrors);
     } catch (err) {
       setFlows([]);
-      setErrors(["YAML hatalı: " + err.message]);
+      setErrors(["YAML error: " + err.message]);
       const line = getYamlErrorLine(err.message);
       setYamlErrorLine(line);
       setYamlErrorMsg(err.message);
@@ -94,7 +94,7 @@ export default function App() {
         link.click();
       })
       .catch((err) => {
-        window.alert('PNG olarak indirme başarısız: ' + err.message);
+        window.alert('Failed to download PNG: ' + err.message);
       });
   };
 
@@ -116,12 +116,12 @@ export default function App() {
         setYamlText(fixed);
         setShowErrorModal(false);
       } else if (data.error) {
-        alert("Claude API Hatası: " + data.error);
+        alert("Claude API Error: " + data.error);
       } else {
-        alert("Claude'dan beklenmeyen yanıt: " + JSON.stringify(data));
+        alert("Unexpected response from Claude: " + JSON.stringify(data));
       }
     } catch (err) {
-      alert("Claude ile düzeltme başarısız: " + err.message);
+      alert("Claude auto-fix failed: " + err.message);
     } finally {
       setIsFixing(false);
     }

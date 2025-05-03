@@ -34,10 +34,10 @@ export default function ErrorModal({
         border: '2px solid #b00020',
         position: 'relative',
       }}>
-        <div style={{ fontWeight: 700, color: '#b00020', fontSize: 18, marginBottom: 8 }}>YAML Hatası</div>
+        <div style={{ fontWeight: 700, color: '#b00020', fontSize: 18, marginBottom: 8 }}>YAML Error</div>
         {yamlErrorLine !== null && (
           <div style={{ marginBottom: 8 }}>
-            <b>Hatalı satır: {yamlErrorLine + 1}</b>
+            <b>Error at line: {yamlErrorLine + 1}</b>
             <div style={{ fontFamily: 'Fira Mono, monospace', color: '#333', fontSize: 14, background: '#f8d7da', borderRadius: 6, padding: 4, margin: '4px 0' }}>
               {yamlLines[yamlErrorLine]}
             </div>
@@ -60,7 +60,7 @@ export default function ErrorModal({
             onClick={onFix}
             disabled={isFixing}
           >
-            {isFixing ? 'Düzeltiliyor...' : 'Fixle (Claude ile)'}
+            {isFixing ? 'Fixing...' : 'Fix with Claude'}
           </button>
           <button
             style={{
@@ -75,7 +75,7 @@ export default function ErrorModal({
             }}
             onClick={onClose}
           >
-            Kapat
+            Close
           </button>
         </div>
       </div>

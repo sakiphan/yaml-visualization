@@ -1,12 +1,66 @@
-# React + Vite
+# YAML Visualization & Auto-Fix Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a web application for visualizing YAML files as interactive trees and automatically fixing YAML errors using Anthropic Claude API.
 
-Currently, two official plugins are available:
+## Features
+- Paste or write your YAML and see it as a tree diagram
+- Detects YAML syntax errors and highlights the problematic line
+- One-click "Fix with Claude" button to auto-correct YAML using Claude API
+- Download the visualization as a PNG image
+- Multi-document YAML support
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Live Demo
+You can run the app locally or with Docker Compose (see below).
 
-## Expanding the ESLint configuration
+## Requirements
+- Node.js 18+
+- Anthropic Claude API key (for auto-fix feature)
+- Docker (optional, for containerized usage)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Local Development
+```sh
+npm install
+npm run dev
+```
+
+## Environment Variables
+Create a `.env` file in the project root:
+```
+VITE_CLAUDE_API_KEY=your_claude_api_key_here
+```
+
+## Docker Usage
+### Build and Run Locally
+```sh
+docker run -p 5173:4173 -p 3001:3001 \
+  -e VITE_CLAUDE_API_KEY=your_claude_api_key_here \
+  sakiphan/yaml-visualization:latest
+```
+
+### With Docker Compose (Recommended)
+1. Make sure your `.env` file contains your Claude API key.
+2. Use the following `docker-compose.yml`:
+```yaml
+version: "3.8"
+services:
+  yaml-visualization:
+    image: sakiphan/yaml-visualization:latest
+    ports:
+      - "5173:4173"
+      - "3001:3001"
+    environment:
+      - VITE_CLAUDE_API_KEY=${VITE_CLAUDE_API_KEY}
+    restart: unless-stopped
+```
+3. Start the app:
+```sh
+docker-compose up -d
+```
+
+## How It Works
+- The frontend is built with React and Vite.
+- The backend proxy (Node.js) securely sends YAML and error messages to Claude API for fixing.
+- All communication with Claude API is done server-side for security and CORS reasons.
+
+## Security Note
+**Never expose your Claude API key in the frontend or public repositories.**

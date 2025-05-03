@@ -31,7 +31,7 @@ export default function FlowPanel({
         }}
         onClick={handleDownloadPng(idx)}
       >
-        PNG olarak indir
+        Download PNG
       </button>
       <ReactFlow
         nodes={flow.nodes}
