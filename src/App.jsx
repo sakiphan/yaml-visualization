@@ -10,6 +10,7 @@ import ErrorModal from './components/ErrorModal';
 import FlowPanel from './components/FlowPanel';
 
 const defaultYaml = "";
+const DEBOUNCE_DELAY = 700;
 
 export default function App() {
   const [yamlText, setYamlText] = useState(defaultYaml);
@@ -22,6 +23,7 @@ export default function App() {
   const lineNumberRef = useRef(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
+  const debounceRef = useRef();
 
   useEffect(() => { document.title = "YAML Visualizer"; }, []);
   useEffect(() => {
@@ -29,43 +31,50 @@ export default function App() {
   }, [flows, rfInstances]);
 
   useEffect(() => {
-    setYamlErrorLine(null);
-    setYamlErrorMsg("");
-    if (!yamlText.trim()) {
-      setFlows([]); setErrors([]); return;
-    }
-    try {
-      const docs = [];
-      YAML.loadAll(yamlText, (doc) => docs.push(doc));
-      const newFlows = [], newErrors = [];
-      docs.forEach((doc, idx) => {
-        try {
-          if (!doc) throw new Error("Empty document");
-          const { nodes, edges } = yamlToTree(doc, `root${idx}`, [
-            { id: `root${idx}`, data: { label: "YAML" }, style: { background: "#e0e0e0", borderRadius: 8, padding: 8, minWidth: 80 } },
-          ]);
-          const layoutedNodes = layoutElements(nodes, edges, "TB");
-          newFlows.push({ nodes: layoutedNodes, edges });
-          newErrors.push(null);
-        } catch (err) {
-          newFlows.push({ nodes: [], edges: [] });
-          newErrors.push("YAML error: " + err.message);
-          const line = getYamlErrorLine(err.message);
-          setYamlErrorLine(line);
-          setYamlErrorMsg(err.message);
-          setShowErrorModal(true);
-        }
-      });
-      setFlows(newFlows);
-      setErrors(newErrors);
-    } catch (err) {
-      setFlows([]);
-      setErrors(["YAML error: " + err.message]);
-      const line = getYamlErrorLine(err.message);
-      setYamlErrorLine(line);
-      setYamlErrorMsg(err.message);
-      setShowErrorModal(true);
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setYamlErrorLine(null);
+      setYamlErrorMsg("");
+      if (!yamlText.trim()) {
+        setFlows([]); setErrors([]); setShowErrorModal(false); return;
+      }
+      try {
+        const docs = [];
+        YAML.loadAll(yamlText, (doc) => docs.push(doc));
+        const newFlows = [], newErrors = [];
+        let hasError = false;
+        docs.forEach((doc, idx) => {
+          try {
+            if (!doc) throw new Error("Empty document");
+            const { nodes, edges } = yamlToTree(doc, `root${idx}`, [
+              { id: `root${idx}`, data: { label: "YAML" }, style: { background: "#e0e0e0", borderRadius: 8, padding: 8, minWidth: 80 } },
+            ]);
+            const layoutedNodes = layoutElements(nodes, edges, "TB");
+            newFlows.push({ nodes: layoutedNodes, edges });
+            newErrors.push(null);
+          } catch (err) {
+            newFlows.push({ nodes: [], edges: [] });
+            newErrors.push("YAML error: " + err.message);
+            const line = getYamlErrorLine(err.message);
+            setYamlErrorLine(line);
+            setYamlErrorMsg(err.message);
+            hasError = true;
+          }
+        });
+        setFlows(newFlows);
+        setErrors(newErrors);
+        // Show modal only if error exists and YAML is not empty
+        setShowErrorModal(hasError && !!yamlText.trim());
+      } catch (err) {
+        setFlows([]);
+        setErrors(["YAML error: " + err.message]);
+        const line = getYamlErrorLine(err.message);
+        setYamlErrorLine(line);
+        setYamlErrorMsg(err.message);
+        setShowErrorModal(!!yamlText.trim());
+      }
+    }, DEBOUNCE_DELAY);
+    return () => clearTimeout(debounceRef.current);
   }, [yamlText]);
 
   const handleInit = (idx) => (instance) => {

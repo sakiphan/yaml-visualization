@@ -34,7 +34,7 @@ VITE_CLAUDE_API_KEY=your_claude_api_key_here
 ```sh
 docker run -p 5173:4173 -p 3001:3001 \
   -e VITE_CLAUDE_API_KEY=your_claude_api_key_here \
-  sakiphan/yaml-visualization:latest
+  sakiphan/yaml-visualization:v1.0
 ```
 
 ### With Docker Compose (Recommended)
@@ -44,7 +44,7 @@ docker run -p 5173:4173 -p 3001:3001 \
 version: "3.8"
 services:
   yaml-visualization:
-    image: sakiphan/yaml-visualization:latest
+    image: sakiphan/yaml-visualization:v1.0
     ports:
       - "5173:4173"
       - "3001:3001"
