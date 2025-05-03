@@ -5,6 +5,7 @@ import dagre from "dagre";
 import Split from "react-split";
 import "reactflow/dist/style.css";
 import "./App.css";
+import { toPng } from 'html-to-image';
 
 const defaultYaml = "";
 
@@ -12,10 +13,11 @@ const nodeWidth = 160;
 const nodeHeight = 40;
 
 function getYamlErrorLine(errorMsg) {
-  // Hata mesajından satır bilgisini bul (örn: at line 7, col 5)
-  const match = errorMsg.match(/at line (\d+)/i) || errorMsg.match(/\((\d+):(\d+)\)/);
+  // Hata mesajından satır bilgisini bul (örn: at line 7, col 5 veya at line 7)
+  const match = errorMsg.match(/at line (\d+)/i) || errorMsg.match(/at line (\d+),/i) || errorMsg.match(/\((\d+):(\d+)\)/);
   if (match) {
-    return parseInt(match[1], 10) - 1; // 0-index
+    // Bazı parserlar 0-index, bazıları 1-index döndürebilir, genellikle 1-index
+    return parseInt(match[1], 10) - 1;
   }
   return null;
 }
@@ -118,6 +120,7 @@ export default function App() {
   const [yamlFix, setYamlFix] = useState(null);
   const reactFlowRefs = useRef([]);
   const [rfInstances, setRfInstances] = useState([]);
+  const lineNumberRef = useRef(null);
 
   useEffect(() => {
     document.title = "YAML Visualizer";
@@ -170,6 +173,11 @@ export default function App() {
           setYamlErrorLine(line);
           setYamlErrorMsg(err.message);
           setYamlFix(tryAutoFixYaml(yamlText, err.message));
+          if (line !== null) {
+            window.alert(`YAML formatı hatalı! Hatalı satır: ${line + 1}`);
+          } else {
+            window.alert("YAML formatı hatalı!");
+          }
         }
       });
       setFlows(newFlows);
@@ -182,6 +190,11 @@ export default function App() {
       setYamlErrorLine(line);
       setYamlErrorMsg(err.message);
       setYamlFix(tryAutoFixYaml(yamlText, err.message));
+      if (line !== null) {
+        window.alert(`YAML formatı hatalı! Hatalı satır: ${line + 1}`);
+      } else {
+        window.alert("YAML formatı hatalı!");
+      }
     }
   }, [yamlText]);
 
@@ -196,6 +209,31 @@ export default function App() {
 
   // YAML textarea satır vurgusu
   const yamlLines = yamlText.split("\n");
+  const lineNumbers = Array.from({ length: yamlLines.length }, (_, i) => i + 1);
+
+  const handleScroll = (e) => {
+    if (lineNumberRef.current) {
+      lineNumberRef.current.scrollTop = e.target.scrollTop;
+    }
+  };
+
+  const handleDownloadPng = (idx) => () => {
+    const node = reactFlowRefs.current[idx];
+    if (!node) return;
+    toPng(node, {
+      cacheBust: true,
+      filter: (el) => !el.classList || !el.classList.contains('download-btn')
+    })
+      .then((dataUrl) => {
+        const link = document.createElement('a');
+        link.download = `flow-${idx + 1}.png`;
+        link.href = dataUrl;
+        link.click();
+      })
+      .catch((err) => {
+        window.alert('PNG olarak indirme başarısız: ' + err.message);
+      });
+  };
 
   return (
     <div className="container">
@@ -223,14 +261,36 @@ export default function App() {
         }}
       >
         <div className="yaml-panel">
-          <textarea
-            className={`yaml-textarea${yamlErrorLine !== null ? ' yaml-error-line' : ''}`}
-            value={yamlText}
-            onChange={e => setYamlText(e.target.value)}
-            spellCheck={false}
-            placeholder="Paste or write your YAML here..."
-            style={yamlErrorLine !== null ? { borderColor: '#b00020' } : {}}
-          />
+          <div style={{ display: 'flex', height: '100%' }}>
+            <div
+              ref={lineNumberRef}
+              style={{
+                background: '#f4f4f4',
+                color: '#888',
+                padding: '18px 6px',
+                borderRadius: '12px 0 0 12px',
+                fontFamily: 'Fira Mono, Consolas, Menlo, monospace',
+                fontSize: '1.08rem',
+                textAlign: 'right',
+                userSelect: 'none',
+                minWidth: 32,
+                borderRight: '1px solid #e0e0e0',
+                overflow: 'hidden',
+                height: '100%',
+              }}
+            >
+              {lineNumbers.map(n => <div key={n}>{n}</div>)}
+            </div>
+            <textarea
+              className={`yaml-textarea${yamlErrorLine !== null ? ' yaml-error-line' : ''}`}
+              value={yamlText}
+              onChange={e => setYamlText(e.target.value)}
+              spellCheck={false}
+              placeholder="Paste or write your YAML here..."
+              style={yamlErrorLine !== null ? { borderColor: '#b00020' } : {}}
+              onScroll={handleScroll}
+            />
+          </div>
           {yamlErrorMsg && (
             <div className="yaml-error-info">
               {yamlErrorLine !== null && (
@@ -257,8 +317,29 @@ export default function App() {
             <div className="flow-area" />
           )}
           {flows.map((flow, idx) => (
-            <div className="flow-area" ref={el => reactFlowRefs.current[idx] = el} key={idx} style={{ flex: 1, margin: 0, minHeight: 0 }}>
+            <div className="flow-area" ref={el => reactFlowRefs.current[idx] = el} key={idx} style={{ flex: 1, margin: 0, minHeight: 0, position: 'relative' }}>
               {errors[idx] && <div className="error">{errors[idx]}</div>}
+              <button
+                className="download-btn"
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  right: 10,
+                  zIndex: 10,
+                  padding: '2px 8px',
+                  fontSize: '0.85rem',
+                  minWidth: 0,
+                  minHeight: 0,
+                  borderRadius: 6,
+                  border: '1px solid #1976d2',
+                  background: '#e3eafc',
+                  color: '#1976d2',
+                  cursor: 'pointer'
+                }}
+                onClick={handleDownloadPng(idx)}
+              >
+                PNG olarak indir
+              </button>
               <ReactFlow
                 nodes={flow.nodes}
                 edges={flow.edges}
