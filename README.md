@@ -17,17 +17,35 @@ You can run the app locally or with Docker Compose (see below).
 - Anthropic Claude API key (for auto-fix feature)
 - Docker (optional, for containerized usage)
 
-## Local Development
-```sh
-npm install
-npm run dev
-```
-
 ## Environment Variables
 Create a `.env` file in the project root:
 ```
 VITE_CLAUDE_API_KEY=your_claude_api_key_here
 ```
+
+## Local Development
+
+Running the application locally requires starting both the frontend development server and the backend proxy server.
+
+1.  **Install Dependencies:**
+    ```sh
+    npm install
+    ```
+
+2.  **Start the Servers:** You need two separate terminals for this:
+
+    *   **Terminal 1: Start the Frontend (Vite Dev Server)**
+        ```sh
+        npm run dev
+        ```
+        This will make the application available at `http://localhost:5173`.
+
+    *   **Terminal 2: Start the Backend Proxy Server**
+        ```sh
+        node proxy.cjs
+        ```
+        This will start the proxy server that handles communication with the Claude API, listening on `http://localhost:3001`. You should see a message `Proxy server running on http://localhost:3001`.
+
 
 ## Docker Usage
 ### Build and Run Locally
