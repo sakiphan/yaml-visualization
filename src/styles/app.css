@@ -1,0 +1,610 @@
+/* ============================================
+   TERMINAL LUXE — YAML Visualizer Theme
+   ============================================ */
+
+/* --- 1. Design Tokens --- */
+:root {
+  /* Backgrounds */
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-elevated: #16161f;
+  --bg-surface: rgba(255, 255, 255, 0.025);
+  --bg-surface-hover: rgba(255, 255, 255, 0.05);
+
+  /* Accent — Electric Teal */
+  --accent: #00d4aa;
+  --accent-hover: #00e8bb;
+  --accent-glow: rgba(0, 212, 170, 0.12);
+  --accent-dim: #009977;
+
+  /* Warning — Amber */
+  --amber: #ffb400;
+  --amber-hover: #ffc633;
+  --amber-glow: rgba(255, 180, 0, 0.12);
+  --amber-dim: #cc9000;
+  --amber-bg: rgba(255, 180, 0, 0.06);
+
+  /* Text */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.52);
+  --text-muted: rgba(255, 255, 255, 0.22);
+  --text-code: #00d4aa;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.1);
+  --border-accent: rgba(0, 212, 170, 0.25);
+
+  /* Glass */
+  --glass-bg: rgba(16, 16, 24, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.07);
+
+  /* Typography */
+  --font-code: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 120ms var(--ease-out);
+  --transition-normal: 220ms var(--ease-out);
+  --transition-slow: 400ms var(--ease-out);
+}
+
+/* --- 2. Reset & Base --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle noise overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* --- 3. Layout --- */
+.container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+/* --- 4. Header --- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 28px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-dim) 50%, transparent 100%);
+  opacity: 0.4;
+}
+
+.header__title {
+  font-family: var(--font-ui);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header__badge {
+  font-family: var(--font-code);
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid var(--border-accent);
+  letter-spacing: 0.04em;
+}
+
+/* --- 5. Split Panel --- */
+.main-split {
+  flex: 1;
+  display: flex;
+  height: calc(100vh - 57px);
+  overflow: hidden;
+}
+
+.gutter {
+  background: var(--bg-secondary) !important;
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  cursor: col-resize;
+  position: relative;
+  transition: background var(--transition-fast);
+}
+
+.gutter:hover {
+  background: var(--bg-elevated) !important;
+}
+
+.gutter::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 36px;
+  border-radius: 1px;
+  background: var(--text-muted);
+  transition: background var(--transition-fast), height var(--transition-fast);
+}
+
+.gutter:hover::after {
+  background: var(--accent);
+  height: 48px;
+}
+
+/* --- 6. YAML Panel --- */
+.yaml-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-primary);
+  position: relative;
+  overflow: hidden;
+}
+
+.yaml-editor-container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.yaml-line-numbers {
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  padding: 16px 0;
+  font-family: var(--font-code);
+  font-size: 0.82rem;
+  line-height: 1.65;
+  text-align: right;
+  user-select: none;
+  min-width: 44px;
+  border-right: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+
+.yaml-line-number {
+  padding: 0 10px 0 6px;
+}
+
+.yaml-textarea {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-code);
+  font-size: 0.85rem;
+  line-height: 1.65;
+  background: var(--bg-primary);
+  color: var(--text-code);
+  caret-color: var(--accent);
+  padding: 16px 18px;
+  border: none;
+  outline: none;
+  resize: none;
+  overflow: auto;
+  tab-size: 2;
+  transition: box-shadow var(--transition-normal);
+}
+
+.yaml-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.yaml-textarea:focus {
+  box-shadow: inset 0 0 0 1px rgba(0, 212, 170, 0.15);
+}
+
+.yaml-textarea--error {
+  box-shadow: inset 0 0 0 1px var(--amber-dim), inset 0 0 24px var(--amber-glow) !important;
+}
+
+/* --- 7. Flow Panel --- */
+.flow-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+  overflow-y: auto;
+  position: relative;
+}
+
+.flow-area {
+  flex: 1;
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+  background: var(--bg-secondary);
+}
+
+.flow-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  opacity: 0.4;
+}
+
+.flow-empty__icon {
+  font-family: var(--font-code);
+  font-size: 3rem;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+
+.flow-empty__text {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+}
+
+.flow-error {
+  padding: 10px 16px;
+  background: var(--amber-bg);
+  color: var(--amber);
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  border-bottom: 1px solid rgba(255, 180, 0, 0.15);
+}
+
+.flow-download-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  padding: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: var(--glass-bg);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all var(--transition-fast);
+}
+
+.flow-download-btn:hover {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  box-shadow: 0 0 16px var(--accent-glow);
+}
+
+/* --- 8. Custom ReactFlow Nodes --- */
+.custom-node {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  min-width: 70px;
+  text-align: center;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.custom-node:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.custom-node--leaf {
+  background: rgba(0, 212, 170, 0.06);
+  border-color: rgba(0, 212, 170, 0.35);
+}
+
+.custom-node--leaf .custom-node__label {
+  color: var(--accent);
+}
+
+.custom-node__label {
+  font-family: var(--font-code);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+  display: block;
+}
+
+.custom-node__handle {
+  width: 6px !important;
+  height: 6px !important;
+  background: var(--accent-dim) !important;
+  border: none !important;
+  opacity: 0.6;
+  transition: opacity var(--transition-fast);
+}
+
+.custom-node:hover .custom-node__handle {
+  opacity: 1;
+}
+
+/* --- 9. Error Modal --- */
+.error-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 200ms var(--ease-out);
+}
+
+.error-modal-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--amber-dim);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 22px;
+  min-width: 340px;
+  max-width: 440px;
+  text-align: center;
+  box-shadow: 0 0 40px var(--amber-glow), 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: slideUp 300ms var(--ease-out);
+}
+
+.error-modal-title {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--amber);
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.error-modal-context {
+  margin-bottom: 12px;
+}
+
+.error-modal-line-label {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.error-modal-code {
+  font-family: var(--font-code);
+  font-size: 0.8rem;
+  color: var(--amber);
+  background: var(--amber-bg);
+  border: 1px solid rgba(255, 180, 0, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  text-align: left;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+.error-modal-msg {
+  font-family: var(--font-code);
+  font-size: 0.75rem;
+  color: var(--amber-dim);
+  margin-bottom: 18px;
+  line-height: 1.6;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.error-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* --- 10. Buttons --- */
+.btn-fix {
+  padding: 8px 22px;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--bg-primary);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  letter-spacing: 0.01em;
+}
+
+.btn-fix:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.btn-fix:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.btn-close {
+  padding: 8px 22px;
+  font-family: var(--font-ui);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-close:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+/* --- 11. Custom Scrollbar --- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-muted) transparent;
+}
+
+/* --- 12. Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+
+/* --- 13. ReactFlow Overrides --- */
+.react-flow__background {
+  background: var(--bg-secondary) !important;
+}
+
+.react-flow__edge-path {
+  stroke: var(--accent-dim) !important;
+  stroke-width: 1.5 !important;
+  opacity: 0.6;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: var(--accent) !important;
+  opacity: 1;
+}
+
+.react-flow__controls {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: transparent !important;
+  border-bottom: 1px solid var(--border-subtle) !important;
+  fill: var(--text-secondary) !important;
+  width: 28px !important;
+  height: 28px !important;
+  transition: all var(--transition-fast);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-surface-hover) !important;
+  fill: var(--accent) !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* Minimap */
+.react-flow__minimap {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* Selection box */
+.react-flow__selection {
+  background: var(--accent-glow) !important;
+  border: 1px solid var(--accent) !important;
+}
